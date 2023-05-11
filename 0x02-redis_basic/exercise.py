@@ -21,6 +21,7 @@ def count_calls(method: Callable) -> Callable:
 
     return wrapper
 
+
 def call_history(method: Callable) -> Callable:
     """store the history of inputs and outputs"""
     @wraps(method)
@@ -39,18 +40,15 @@ def replay(fn: Callable):
     """display the history of calls of a particular function"""
     r = redis.Redis()
     function_name = fn.__qualname__
-    value = r.get(function_name)
+    data = r.get(function_name)
     try:
-        value = int(value.decode("utf-8"))
+        data = int(data.decode("utf-8"))
     except Exception:
-        value = 0
+        data = 0
 
-    # print(f"{function_name} was called {value} times")
-    print("{} was called {} times:".format(function_name, value))
-    # inputs = r.lrange(f"{function_name}:inputs", 0, -1)
+    print("{} was called {} times:".format(function_name, data))
     inputs = r.lrange("{}:inputs".format(function_name), 0, -1)
 
-    # outputs = r.lrange(f"{function_name}:outputs", 0, -1)
     outputs = r.lrange("{}:outputs".format(function_name), 0, -1)
 
     for input, output in zip(inputs, outputs):
@@ -64,7 +62,6 @@ def replay(fn: Callable):
         except Exception:
             output = ""
 
-        # print(f"{function_name}(*{input}) -> {output}")
         print("{}(*{}) -> {}".format(function_name, input, output))
 
 
