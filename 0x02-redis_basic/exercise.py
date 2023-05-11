@@ -3,9 +3,23 @@
 Writing strings to Redis
 """
 from __future__ import annotations
+from functools import wraps
 from typing import Union, Callable, Optional
 import redis
 import uuid
+
+
+def count_calls(method: Callable) -> Callable:
+    """ returns a callable """
+    datakey = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """ wrapper function """
+        self._redis.incr(datakey)
+        return method(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Cache():
